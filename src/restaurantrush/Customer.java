@@ -61,6 +61,14 @@ public class Customer {
         return 8;
     }
 
+    public int calculateItemPrice(MenuItem item, boolean happyHourActive) {
+        int price = item.getPriceCents();
+        if (happyHourActive) {
+            price = (int) Math.round(price * 0.80);
+        }
+        return price;
+    }
+
     // Settles the locked final price saved when the order was taken
     public int calculateBill() {
         if (order == null) {

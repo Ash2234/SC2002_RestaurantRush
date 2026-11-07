@@ -1,6 +1,20 @@
 package restaurantrush;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Waiter {
+
+    public List<Table> getOrderableTables(RestaurantState state) {
+        List<Table> orderable = new ArrayList<>();
+        for (Table t : state.getTables()) {
+            if (t.isOccupied() && t.getCurrentCustomer().getOrder() == null) {
+                orderable.add(t);
+            }
+        }
+        return orderable;
+    }
+    
     public boolean seatCustomer(RestaurantState state, int tableId) {
         if (state.getWaitingQueue().isEmpty()) {
             return false;
@@ -24,17 +38,7 @@ public class Waiter {
         }
 
         MenuItem chosenItem = customer.chooseFood(menu);
-        int finalPriceCents = chosenItem.getPriceCents();
-
-        // Apply VIP 10% discount first
-        if (customer instanceof VIPCustomer) {
-            finalPriceCents = (int) Math.round(finalPriceCents * 0.90);
-        }
-
-        // Apply Happy Hour 20% promotional discount if active
-        if (state.isHappyHourActive()) {
-            finalPriceCents = (int) Math.round(finalPriceCents * 0.80);
-        }
+        int finalPriceCents = customer.calculateItemPrice(chosenItem, state.isHappyHourActive());
 
         String orderId = "ORD-" + customer.getId();
         Order order = new Order(orderId, customer.getId(), chosenItem, finalPriceCents);

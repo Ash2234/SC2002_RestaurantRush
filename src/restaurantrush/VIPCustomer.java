@@ -20,4 +20,13 @@ public class VIPCustomer extends Customer {
     public String getTypeLabel() {
         return "VIP";
     }
+
+    @Override
+    public int calculateItemPrice(MenuItem item, boolean happyHourActive) {
+        int price = (int) Math.round(item.getPriceCents() * 0.90);
+        if (happyHourActive) {
+            price = (int) Math.round(price * 0.80);
+        }
+        return price;
+    }
 }

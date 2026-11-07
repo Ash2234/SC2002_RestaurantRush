@@ -91,13 +91,7 @@ public class TurnController {
     }
 
     private List<Order> getReadyOrdersSnapshot() {
-        List<Order> readyOrders = new ArrayList<>();
-        for (Order o : state.getActiveOrders()) {
-            if (o.getStatus() == OrderStatus.READY) {
-                readyOrders.add(o);
-            }
-        }
-        return readyOrders;
+        return state.getReadyOrders();
     }
 
     private void handleWaiterAction(List<Order> readyBeforeTurn) {
@@ -128,12 +122,7 @@ public class TurnController {
                     break;
                 }
                 case 2: { // Take order
-                    List<Table> orderableTables = new ArrayList<>();
-                    for (Table t : state.getTables()) {
-                        if (t.isOccupied() && t.getCurrentCustomer().getOrder() == null) {
-                            orderableTables.add(t);
-                        }
-                    }
+                    List<Table> orderableTables = waiter.getOrderableTables(state);
                     if (orderableTables.isEmpty()) {
                         view.printError("No seated customers waiting to order.");
                         break;
@@ -191,12 +180,7 @@ public class TurnController {
     }
 
     private void handleChefAction() {
-        List<Order> cookableOrders = new ArrayList<>();
-        for (Order o : state.getActiveOrders()) {
-            if (o.getStatus() == OrderStatus.ORDERED) {
-                cookableOrders.add(o);
-            }
-        }
+        List<Order> cookableOrders = state.getCookableOrders();
         Order chosenOrder = input.getChefChoice(cookableOrders);
         if (chosenOrder != null) {
             chef.cookOrder(chosenOrder);
@@ -247,10 +231,7 @@ public class TurnController {
                 Customer c = table.getCurrentCustomer();
                 c.applyTurnDecay();
                 if (c.getState() == CustomerState.ABANDONED) {
-                    if (c.getOrder() != null) {
-                        c.getOrder().setStatus(OrderStatus.CANCELLED);
-                        state.removeActiveOrder(c.getOrder());
-                    }
+                    state.cancelCustomerOrder(c);
                     table.vacate();
                     state.recordAbandonedCustomer(c);
                     view.printMessage(String.format("Customer %s reached 0 satisfaction and left Table %d without paying.", c.getId(), table.getTableId()));
@@ -297,15 +278,7 @@ public class TurnController {
     }
 
     private void handleHostAction() {
-        if (state.getWaitingQueue().isEmpty()) {
-            return;
-        }
-        List<Integer> freeTableIds = new ArrayList<>();
-        for (Table t : state.getTables()) {
-            if (!t.isOccupied()) {
-                freeTableIds.add(t.getTableId());
-            }
-        }
+        List<Integer> freeTableIds = host.getAvailableTableIds(state);
         if (freeTableIds.isEmpty()) {
             return;
         }

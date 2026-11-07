@@ -9,4 +9,8 @@ public class Chef {
         order.advancePreparation();
         return true;
     }
+
+    public boolean canCook(Order order) {
+        return order != null && order.getStatus() == OrderStatus.ORDERED;
+    }
 }

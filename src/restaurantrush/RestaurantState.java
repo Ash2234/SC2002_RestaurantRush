@@ -70,10 +70,6 @@ public class RestaurantState {
         this.activeOrders.add(order);
     }
 
-    public void removeActiveOrder(Order order) {
-        this.activeOrders.remove(order);
-    }
-
     public void recordPaidCustomer(Customer customer) {
         this.paidCustomers.add(customer);
     }
@@ -133,6 +129,37 @@ public class RestaurantState {
     public void decrementHappyHour() {
         if (happyHourTurnsRemaining > 0) {
             happyHourTurnsRemaining--;
+        }
+    }
+
+    public List<Order> getReadyOrders() {
+        List<Order> ready = new ArrayList<>();
+        for (Order o : activeOrders) {
+            if (o.isReady()) {
+                ready.add(o);
+            }
+        }
+        return ready;
+    }
+
+    public List<Order> getCookableOrders() {
+        List<Order> cookable = new ArrayList<>();
+        for (Order o : activeOrders) {
+            if (o.getStatus() == OrderStatus.ORDERED) {
+                cookable.add(o);
+            }
+        }
+        return cookable;
+    }
+
+    public void cancelCustomerOrder(Customer customer) {
+        if (customer == null) {
+            return;
+        }
+        Order order = customer.getOrder();
+        if (order != null) {
+            order.setStatus(OrderStatus.CANCELLED);
+            this.activeOrders.remove(order);
         }
     }
 }
