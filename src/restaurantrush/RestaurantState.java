@@ -78,6 +78,10 @@ public class RestaurantState {
         this.abandonedCustomers.add(customer);
     }
 
+    public void removeActiveOrder(Order order) {
+        this.activeOrders.remove(order);
+    }
+
     public Table findTableById(int tableId) {
         for (Table table : tables) {
             if (table.getTableId() == tableId) {
